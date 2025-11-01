@@ -1,0 +1,19 @@
+{
+  "name": "wear-bot",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3"
+  }
+}
