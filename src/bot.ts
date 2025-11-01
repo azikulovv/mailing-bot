@@ -13,10 +13,9 @@ bot.use(logger);
 bot.start(startCommand);
 bot.action("start", startCommand);
 
-bot.command("catalog", catalogCommand);
-bot.action(/^catalog-page_.+$/, catalogCommand);
+bot.action(/catalog:(.+)/, catalogCommand);
 
-bot.action(/^callback-catalog_.+$/, productCallback);
+bot.action(/product:(.+)/, productCallback);
 
 // Универсальный обработчик сообщений
 bot.on("text", (ctx) => {
