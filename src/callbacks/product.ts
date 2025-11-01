@@ -1,35 +1,67 @@
 import { Context, Input, Markup } from "telegraf";
+import path from "path";
 import { products } from "../data/products";
 
-/** Безопасно извлекает номер страницы из callback data */
-function getDataFromCallback(ctx: Context): { page: number; name: string } {
+/**
+ * Безопасно извлекает параметры из callback data
+ * Пример: "product:id=3&page=1"
+ */
+function parseCallbackData(ctx: Context): { id: number; page: number } {
   try {
-    const data = (ctx.callbackQuery as any)?.data ?? "";
-    const query = data.replace(/^product:/, "");
+    const raw = (ctx.callbackQuery as any)?.data ?? "";
+    const query = raw.replace(/^product:/, "");
     const params = Object.fromEntries(new URLSearchParams(query));
-    return { page: Number(params.page) || 1, name: params.name };
-  } catch {
-    throw new Error("Не удалость найти объект!");
+
+    return {
+      id: Number(params.id) || 0,
+      page: Number(params.page) || 1,
+    };
+  } catch (err) {
+    console.error("❌ Error parsing callback data:", err);
+    throw new Error("Couldn't process product data");
   }
 }
 
+/**
+ * Обработчик карточки товара
+ * — Показывает изображение, описание и кнопки действий
+ */
 export const productCallback = async (ctx: Context) => {
-  await ctx.answerCbQuery();
-  const data = getDataFromCallback(ctx);
+  await ctx.answerCbQuery(); // Закрываем "loading" у кнопки
 
-  const product = products.find((p) => p.callback === data.name);
+  const { id, page } = parseCallbackData(ctx);
+  const product = products.find((p) => p.id === id);
 
-  await ctx.editMessageMedia(
-    {
-      type: "photo",
-      media: Input.fromLocalFile(`src/assets/products/${product?.image}`),
-      caption: `🔥 ${product?.name}\n${product?.description}\n\n💰 ${product?.price}\n⚡ Стиль, который выделяет. Возьми свой прямо сейчас!`,
-    },
-    {
-      ...Markup.inlineKeyboard([
-        [Markup.button.callback("💰 Купить", `info:name=${product?.callback}`)],
-        [Markup.button.callback("⬅️ Назад", `catalog:page=${data.page}`)],
-      ]),
-    }
-  );
+  if (!product) {
+    await ctx.reply("⚠️ The product has not been found or is outdated.");
+    return;
+  }
+
+  const imagePath = path.resolve("src", "assets", "products", product.image || "no-image.jpeg");
+
+  const caption =
+    `🔥 <b>${product.name}</b>\n\n` +
+    `${product.description}\n\n` +
+    `💰 <b>${product.price}</b>\n` +
+    `⚡ Стиль, который выделяет. Возьми свой прямо сейчас!`;
+
+  const keyboard = Markup.inlineKeyboard([
+    [Markup.button.callback("💰 Купить", `buy:id=${product.id}`)],
+    [Markup.button.callback("⬅️ Назад", `catalog:page=${page}`)],
+  ]);
+
+  try {
+    await ctx.editMessageMedia(
+      {
+        type: "photo",
+        media: Input.fromLocalFile(imagePath),
+        caption,
+        parse_mode: "HTML",
+      },
+      { reply_markup: keyboard.reply_markup }
+    );
+  } catch (err) {
+    console.error("❌ Error when updating the product card:", err);
+    await ctx.reply("An error occurred when displaying the product. Try again later.");
+  }
 };

@@ -1,25 +1,30 @@
 import { Context, Input, Markup } from "telegraf";
+import path from "path";
 
 export const startCommand = async (ctx: Context) => {
-  const keyboard = Markup.inlineKeyboard([Markup.button.callback("🛍️ Каталог", `catalog:page=1`)], {
-    columns: 1,
-  });
+  const imagePath = path.resolve("src/assets/start.jpeg");
+
+  const caption = "👋 Добро пожаловать!\nМеньше слов — больше стиля.";
+  const keyboard = Markup.inlineKeyboard([Markup.button.callback("🛍️ Каталог", "catalog:page=1")]);
 
   try {
-    const isCallback = (ctx.callbackQuery as any).data;
-
-    return await ctx.editMessageMedia(
-      {
-        type: "photo",
-        media: Input.fromLocalFile("src/assets/start.jpeg"),
-        caption: "Добро пожаловать.\n" + "Меньше слов — больше стиля.",
-      },
-      { reply_markup: keyboard.reply_markup }
-    );
-  } catch {
-    return await ctx.replyWithPhoto(Input.fromLocalFile("src/assets/start.jpeg"), {
-      caption: "Добро пожаловать.\n" + "Меньше слов — больше стиля.",
-      reply_markup: keyboard.reply_markup,
-    });
+    if (ctx.callbackQuery && "data" in ctx.callbackQuery) {
+      await ctx.editMessageMedia(
+        {
+          type: "photo",
+          media: Input.fromLocalFile(imagePath),
+          caption,
+        },
+        { reply_markup: keyboard.reply_markup }
+      );
+    } else {
+      await ctx.replyWithPhoto(Input.fromLocalFile(imagePath), {
+        caption,
+        reply_markup: keyboard.reply_markup,
+      });
+    }
+  } catch (err) {
+    console.error("Error when executing the /start command:", err);
+    await ctx.reply("⚠️ An error has occurred. Try again later.");
   }
 };

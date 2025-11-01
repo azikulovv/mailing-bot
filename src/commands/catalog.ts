@@ -1,93 +1,47 @@
-import { Context, Input, Markup } from "telegraf";
+// src/commands/catalog.ts
+import { Context, Input } from "telegraf";
 import { products } from "../data/products";
-
-const PAGE_SIZE = 5;
-const CATALOG_IMAGE = "src/assets/catalog.jpeg";
-
-interface Product {
-  id: number;
-  name: string;
-  callback: string;
-  description: string;
-  price: string;
-}
-
-interface CatalogCallback {
-  page: number;
-}
-
-/** Безопасно извлекает номер страницы из callback data */
-function getPageFromCallback(ctx: Context): number {
-  try {
-    const data = (ctx.callbackQuery as any)?.data ?? "";
-    const query = data.replace(/^catalog:/, "");
-    const params = Object.fromEntries(new URLSearchParams(query));
-    const page = parseInt(params.page, 10);
-    return isNaN(page) ? 1 : page;
-  } catch {
-    return 1;
-  }
-}
-
-/** Формирует callback data для пагинации */
-function buildCatalogCallback(page: number): string {
-  return `catalog:page=${page}`;
-}
-
-/** Формирует inline-клавиатуру каталога */
-function buildCatalogKeyboard(currentPage: number, total: number, pageProducts: Product[]) {
-  const productButtons: any[] = pageProducts.map((p) => [
-    Markup.button.callback(p.name, `product:name=${p.callback}&page=${currentPage}`),
-  ]);
-
-  const navButtons: ReturnType<typeof Markup.button.callback>[] = [];
-
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-
-  if (currentPage > 1) {
-    navButtons.push(Markup.button.callback("⬅️ Назад", buildCatalogCallback(currentPage - 1)));
-  }
-  if (currentPage < totalPages) {
-    navButtons.push(Markup.button.callback("➡️ Далее", buildCatalogCallback(currentPage + 1)));
-  }
-
-  // Добавим кнопку "🏠 В главное меню" при желании
-  navButtons.push(Markup.button.callback("🏠 Главное меню", "start"));
-
-  return Markup.inlineKeyboard([...productButtons, navButtons], { columns: 1 });
-}
+import { createPagination } from "../utils/pagination";
+import { Product } from "../types/product";
 
 export const catalogCommand = async (ctx: Context) => {
-  try {
-    await ctx.answerCbQuery();
+  const callbackData = (ctx.callbackQuery as any)?.data ?? "catalog:page=1";
+  const match = callbackData.match(/page=(\d+)/);
+  const currentPage = match ? Number(match[1]) : 1;
 
-    const currentPage = getPageFromCallback(ctx);
-    const start = (currentPage - 1) * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
+  console.log("📄 Текущая страница:", currentPage);
 
-    const pageProducts = products.slice(start, end);
+  const {
+    keyboard,
+    currentPage: page,
+    totalPages,
+  } = createPagination<Product>({
+    items: products,
+    page: currentPage,
+    pageSize: 5,
+    prefix: "catalog",
+    mainMenu: { text: "🏠 Главное меню", callback: "start" },
+    makeItemButton: (product) => ({
+      text: product.name,
+      callbackData: `product:id=${product.id}&page=${currentPage}`,
+    }),
+  });
 
-    const keyboard = buildCatalogKeyboard(currentPage, products.length, pageProducts);
+  const caption = `🛍 Каталог\n\nСтраница ${page} из ${totalPages}`;
 
-    const totalPages = Math.ceil(products.length / PAGE_SIZE);
-
+  if (ctx.callbackQuery) {
     await ctx.editMessageMedia(
       {
         type: "photo",
-        media: Input.fromLocalFile(CATALOG_IMAGE),
-        caption:
-          `🛍️ *Каталог одежды*\n` +
-          `Только актуальные коллекции и стиль без компромиссов.\n\n` +
-          `📄 Страница ${currentPage} из ${totalPages}\n\n` +
-          `Выберите категорию 👇`,
-        parse_mode: "Markdown",
+        media: Input.fromLocalFile("src/assets/catalog.jpeg"),
+        caption,
       },
-      {
-        reply_markup: keyboard.reply_markup,
-      }
+      { reply_markup: keyboard.reply_markup }
     );
-  } catch (error) {
-    console.error("Ошибка в catalogCommand:", error);
-    await ctx.reply("❌ Произошла ошибка при открытии каталога. Попробуйте позже.");
+  } else {
+    await ctx.replyWithPhoto(Input.fromLocalFile("src/assets/catalog.jpeg"), {
+      caption,
+      reply_markup: keyboard.reply_markup,
+    });
   }
 };
