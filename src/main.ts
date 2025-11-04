@@ -1,8 +1,10 @@
-import { bot } from "./bot";
+import { createBot } from "@/bot";
 
-bot.launch();
+const bot = createBot();
 
-console.log("✅ The bot is running");
+bot.launch(() => {
+  console.log("✅ The bot is running");
+});
 
 // Корректная остановка (Ctrl+C)
 process.once("SIGINT", () => bot.stop("SIGINT"));

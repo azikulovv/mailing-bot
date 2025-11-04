@@ -1,11 +1,15 @@
-import { Context, Input, Markup } from "telegraf";
+import { Input, Markup } from "telegraf";
 import path from "path";
+import { BotContext } from "@/types";
 
-export const startCommand = async (ctx: Context) => {
+export const startCommand = async (ctx: BotContext) => {
   const imagePath = path.resolve("src/assets/start.jpeg");
 
-  const caption = "👋 Добро пожаловать!\nМеньше слов — больше стиля.";
-  const keyboard = Markup.inlineKeyboard([Markup.button.callback("🛍️ Каталог", "catalog:page=1")]);
+  // const caption = "👋 Добр"о пожаловать!\nМеньше слов — больше стиля.";
+  const caption = ctx.i18n.t("start.title");
+  const keyboard = Markup.inlineKeyboard([
+    Markup.button.callback(ctx.i18n.t("start.inline-button.catalog"), "catalog:page=1"),
+  ]);
 
   try {
     if (ctx.callbackQuery && "data" in ctx.callbackQuery) {
@@ -25,6 +29,6 @@ export const startCommand = async (ctx: Context) => {
     }
   } catch (err) {
     console.error("Error when executing the /start command:", err);
-    await ctx.reply("⚠️ An error has occurred. Try again later.");
+    await ctx.reply(ctx.i18n.t("start.error"));
   }
 };

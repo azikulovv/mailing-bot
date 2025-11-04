@@ -1,17 +1,28 @@
-import { Markup, Scenes } from "telegraf";
-import { BotContext } from "../types";
-import { constants } from "../config";
+import { Context, Markup, Scenes } from "telegraf";
+import { BotContext } from "@/types";
+import { constants } from "@/config";
+import { Product } from "@/types/product";
+import { products } from "@/database";
+import { parseCallbackData } from "@/utils/parseCallbackData";
 
-let state = {
-  address: "",
-  phone: "",
+type State = {
+  address: string;
+  phone: string;
+  product: Product;
 };
+
+let state: Partial<State> = {};
 
 export const orderWizard = new Scenes.WizardScene<BotContext>(
   "orderWizard",
 
   // Step 1 - ask the user for the delivery address.
   async (ctx: BotContext) => {
+    const { id } = parseCallbackData<{ id: string }>((ctx.callbackQuery as any).data, /^order:/);
+    const product = products.find((p) => p.id === Number(id));
+
+    state.product = product;
+
     await ctx.reply("📍 Куда необходимо доставить?");
     return ctx.wizard.next();
   },
@@ -29,7 +40,7 @@ export const orderWizard = new Scenes.WizardScene<BotContext>(
     state.phone = (ctx.message as any).text;
 
     await ctx.reply(
-      `✅ Проверьте данные:\n\n📍 Адрес: ${state.address}\n👤 Имя: ${ctx.from?.first_name}\n📞 Телефон: ${state.phone}`,
+      `✅ Проверьте данные:\n\n📍 Адрес: ${state.address}\n👤 Имя: ${ctx.from?.first_name}\n📞 Телефон: ${state.phone}\n Product Name: ${state.product?.name}`,
       Markup.inlineKeyboard([
         [Markup.button.callback("✅ Подтвердить", "confirm_order")],
         [Markup.button.callback("✏️ Изменить", "edit_order")],
@@ -42,15 +53,16 @@ export const orderWizard = new Scenes.WizardScene<BotContext>(
   async (ctx) => {
     if (!("callback_query" in ctx.update)) return;
 
-    const action = ctx.update.callback_query.data;
+    const action = (ctx.update.callback_query as any).data;
 
     if (action === "confirm_order") {
       await ctx.deleteMessage();
 
       await ctx.telegram.sendMessage(
         constants.ADMIN_ID,
-        `📍 Адрес: ${state.address}\n👤 Имя: ${ctx.from?.first_name}\n📞 Телефон: ${state.phone}`
+        `📍 Адрес: ${state.address}\n👤 Имя: ${ctx.from?.first_name}\n📞 Телефон: ${state.phone}\n Product${state.product?.name}`
       );
+
       await ctx.reply("🎉 Заказ оформлен! Мы свяжемся с вами в ближайшее время.", {
         reply_markup: Markup.inlineKeyboard([Markup.button.callback("Главное меню", "start")])
           .reply_markup,
