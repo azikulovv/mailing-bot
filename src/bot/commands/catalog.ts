@@ -30,13 +30,13 @@ export const catalogCommand = async (ctx: BotContext) => {
     await ctx.editMessageMedia(
       {
         type: "photo",
-        media: Input.fromLocalFile("src/assets/catalog.jpeg"),
+        media: Input.fromLocalFile("src/assets/catalog.png"),
         caption,
       },
       { reply_markup: keyboard.reply_markup }
     );
   } else {
-    await ctx.replyWithPhoto(Input.fromLocalFile("src/assets/catalog.jpeg"), {
+    await ctx.replyWithPhoto(Input.fromLocalFile("src/assets/catalog.png"), {
       caption,
       reply_markup: keyboard.reply_markup,
     });

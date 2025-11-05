@@ -3,9 +3,8 @@ import path from "path";
 import { BotContext } from "@/types";
 
 export const startCommand = async (ctx: BotContext) => {
-  const imagePath = path.resolve("src/assets/start.jpeg");
+  const imagePath = path.resolve("src/assets/start.png");
 
-  // const caption = "👋 Добр"о пожаловать!\nМеньше слов — больше стиля.";
   const caption = ctx.i18n.t("start.title");
   const keyboard = Markup.inlineKeyboard([
     Markup.button.callback(ctx.i18n.t("start.inline-button.catalog"), "catalog:page=1"),

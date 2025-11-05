@@ -1,6 +1,6 @@
 import path from "path";
 import { products } from "@/database";
-import { Context, Input, Markup } from "telegraf";
+import { Input, Markup } from "telegraf";
 import { parseCallbackData } from "@/utils/parseCallbackData";
 import { BotContext } from "@/types";
 
