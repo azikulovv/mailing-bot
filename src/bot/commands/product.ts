@@ -18,7 +18,7 @@ export const productCallback = async (ctx: BotContext) => {
     return await ctx.reply(ctx.i18n.t("product.error.not-found"));
   }
 
-  const imagePath = path.resolve("src", "assets", "products", product.image || "no-image.jpeg");
+  const imagePath = path.resolve("src", "assets", product.image || "no-image.jpeg");
   const image = product.image.startsWith("http") ? product.image : Input.fromLocalFile(imagePath);
 
   const caption = ctx.i18n.t("product.title", {

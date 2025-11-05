@@ -1,15 +1,16 @@
-import { Context, Markup, Scenes } from "telegraf";
+import { Context, Input, Markup, Scenes } from "telegraf";
 import { BotContext } from "@/types";
 import { constants } from "@/config";
 import { Product } from "@/types/product";
 import { products } from "@/database";
 import { parseCallbackData } from "@/utils/parseCallbackData";
+import path from "path";
 
 type State = {
-  address: string;
-  phone: string;
-  product: Product;
   name: string;
+  phone: string;
+  address: string;
+  product: Product;
   username: string;
 };
 
@@ -32,6 +33,7 @@ export const orderWizard = new Scenes.WizardScene<BotContext>(
   // Step 2 - ask the user for the phone number
   async (ctx) => {
     state.address = (ctx.message as any).text;
+
     await ctx.reply(ctx.i18n.t("order.phone"));
     return ctx.wizard.next();
   },
@@ -51,9 +53,11 @@ export const orderWizard = new Scenes.WizardScene<BotContext>(
   },
 
   async (ctx) => {
+    const imagePath = path.resolve("src", "assets", state.product!.image || "no-image.jpeg");
+    state.product!.image = imagePath;
     state.name = (ctx.message as any).text;
 
-    await ctx.replyWithPhoto(state.product!.image, {
+    await ctx.replyWithPhoto(Input.fromLocalFile(imagePath), {
       caption: ctx.i18n.t("order.confirmation", {
         address: state.address,
         phone: state.phone,
@@ -79,7 +83,7 @@ export const orderWizard = new Scenes.WizardScene<BotContext>(
     if (action === "confirm_order") {
       await ctx.deleteMessage();
 
-      await ctx.telegram.sendPhoto(constants.ADMIN_ID, state.product!.image, {
+      await ctx.telegram.sendPhoto(constants.ADMIN_ID, Input.fromLocalFile(state.product!.image), {
         caption: ctx.i18n.t("order.card", {
           state,
         }),
