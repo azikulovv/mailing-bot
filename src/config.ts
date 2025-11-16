@@ -6,6 +6,7 @@ config();
 const envSchema = z.object({
   BOT_TOKEN: z.string().min(1, "BOT_TOKEN is required"),
   ADMIN_ID: z.string().min(1, "ADMIN_ID is required"),
+  DB_PATH: z.string().min(1, "DB_PATH is required"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 

@@ -1,4 +1,4 @@
-import { createBot } from "@/bot";
+import { createBot } from "@/presentation/router";
 
 const bot = createBot();
 
