@@ -1,9 +1,9 @@
 import { startCommand } from "./start";
-import { catalogCommand } from "./catalog";
-import { productCallback } from "./product";
+import { mailCallback } from "./mail";
+import { mailingCallback } from "./mailing";
 
 export const commands = {
   start: startCommand,
-  catalog: catalogCommand,
-  product: productCallback,
+  mail: mailCallback,
+  mailing: mailingCallback,
 };

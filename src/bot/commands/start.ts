@@ -1,28 +1,18 @@
-import { Input, Markup } from "telegraf";
-import path from "path";
+import { Markup } from "telegraf";
 import { BotContext } from "@/types";
 
 export const startCommand = async (ctx: BotContext) => {
-  const imagePath = path.resolve("src/assets/start.png");
-
   const caption = ctx.i18n.t("start.title");
   const keyboard = Markup.inlineKeyboard([
-    Markup.button.callback(ctx.i18n.t("start.inline-button.catalog"), "catalog:page=1"),
+    Markup.button.callback("💬 Рассылки", "mailing"),
+    Markup.button.callback("✒️ Создать рассылку", "create"),
   ]);
 
   try {
     if (ctx.callbackQuery && "data" in ctx.callbackQuery) {
-      await ctx.editMessageMedia(
-        {
-          type: "photo",
-          media: Input.fromLocalFile(imagePath),
-          caption,
-        },
-        { reply_markup: keyboard.reply_markup }
-      );
+      await ctx.editMessageText(caption, { reply_markup: keyboard.reply_markup });
     } else {
-      await ctx.replyWithPhoto(Input.fromLocalFile(imagePath), {
-        caption,
+      await ctx.reply(caption, {
         reply_markup: keyboard.reply_markup,
       });
     }
