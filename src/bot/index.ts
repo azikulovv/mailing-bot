@@ -8,6 +8,7 @@ import { commands } from "./commands";
 import { constants } from "@/config";
 import { createWizard } from "./scenes/create.scene";
 import type { BotContext } from "@/types";
+import "@/database/index";
 
 export const createBot = () => {
   const bot = new Telegraf<BotContext>(constants.BOT_TOKEN);
@@ -26,6 +27,7 @@ export const createBot = () => {
   bot.start((ctx) => commands.start(ctx));
   bot.action("start", (ctx) => commands.start(ctx));
   bot.action(/mail:(.+)/, (ctx) => commands.mail(ctx));
+  bot.action(/send:(.+)/, (ctx) => commands.send(ctx));
   bot.action("mailing", (ctx) => commands.mailing(ctx));
   bot.action("create", (ctx) => ctx.scene.enter("createWizard"));
 

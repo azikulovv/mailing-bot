@@ -1,5 +1,6 @@
 import { Markup, Scenes } from "telegraf";
 import { BotContext } from "@/types";
+import { addMail } from "@/database/chats";
 
 type State = {
   title: string;
@@ -62,6 +63,13 @@ export const createWizard = new Scenes.WizardScene<BotContext>(
 
     if (action === "confirm_create-mail") {
       await ctx.deleteMessage();
+
+      // Логика сохранение рассылки в БД
+      addMail.run({
+        chats_id: state.chatsId,
+        title: state.title,
+        content: state.content,
+      });
 
       await ctx.reply(ctx.i18n.t("create-mail.success"), {
         reply_markup: Markup.inlineKeyboard([Markup.button.callback("Главное меню", "start")])
