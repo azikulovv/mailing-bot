@@ -8,6 +8,7 @@ import { handlers } from "@/presentation/handlers";
 import { constants } from "@/config";
 import type { BotContext } from "@/types";
 import { MessageScheduler } from "@/infrastructure/telegram/schedular";
+import { adminOnly } from "@/middlewares/adminOnly";
 
 export const createBot = () => {
   let bot = new Telegraf<BotContext>(constants.BOT_TOKEN);
@@ -24,6 +25,7 @@ export const createBot = () => {
   bot.use(session());
   bot.use(i18n.middleware());
   bot.use(stage.middleware());
+  bot.use(adminOnly(constants.ADMIN_ID.split(",")));
 
   bot.start((ctx) => handlers.start(ctx));
   bot.action("start", (ctx) => handlers.start(ctx));
