@@ -10,7 +10,8 @@ export const sendHandler = async (ctx: BotContext) => {
   await ctx.answerCbQuery();
 
   try {
-    ctx.scheduler.start(mail!.chatsId, mail!.title, 10000);
+    // Every 2 hours send message!
+    ctx.scheduler.start(mail!.chatsId, mail!.title, 2 * 60 * 60 * 1000);
     await ctx.editMessageText(`Ваша рассылка начата!`);
   } catch (err) {
     console.error("❌ Error updating the mail:", err);
