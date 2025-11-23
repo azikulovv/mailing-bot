@@ -10,12 +10,16 @@ const forwardHandler = async (ctx: BotContext) => {
   await ctx.answerCbQuery();
 
   try {
-    // Every 2 hours send message!
-    console.log(mail);
-    // ctx.scheduler.start(mail!.chatIds, mail!.forwardMessageId, 2 * 60 * 60 * 1000);
-
     // 10 sec
-    ctx.scheduler.start(mail!.chatIds, Number(ctx.from?.id), mail!.forwardMessageId, 10 * 1000);
+    // ctx.scheduler.start(mail!.chatIds, Number(ctx.from?.id), mail!.forwardMessageId, 10 * 1000);
+
+    // Every 2 hours send message!
+    ctx.scheduler.start(
+      mail!.chatIds,
+      Number(ctx.from?.id),
+      mail!.forwardMessageId,
+      2 * 60 * 60 * 1000
+    );
     await ctx.editMessageText(`Ваша рассылка начата!`);
   } catch (err) {
     console.error("❌ Error updating the mail:", err);
