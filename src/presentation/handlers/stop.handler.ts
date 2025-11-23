@@ -1,6 +1,6 @@
 import { BotContext } from "@/types";
 
-export const stopHandler = async (ctx: BotContext) => {
+const stopHandler = async (ctx: BotContext) => {
   await ctx.answerCbQuery();
 
   try {
@@ -11,3 +11,5 @@ export const stopHandler = async (ctx: BotContext) => {
     await ctx.reply(ctx.i18n.t("mail.error.displaying"));
   }
 };
+
+export default stopHandler;

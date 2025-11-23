@@ -1,14 +1,14 @@
-export const mailQueries = {
+export const newsletterQueries = {
   createTable: `
-    CREATE TABLE IF NOT EXISTS mails (
+    CREATE TABLE IF NOT EXISTS newsletters (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      chats_id TEXT UNIQUE NOT NULL,
       title TEXT,
-      content TEXT,
+      chat_ids TEXT NOT NULL,
+      forward_message_id TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
-  findById: `SELECT * FROM mails WHERE id = ?`,
-  createMail: `INSERT OR IGNORE INTO mails (chats_id, title, content) VALUES (@chats_id, @title, @content)`,
-  findAll: `SELECT * FROM mails`,
-  deleteById: ``,
+  findById: `SELECT * FROM newsletters WHERE id = ?`,
+  createNewsLetter: `INSERT OR IGNORE INTO newsletters (title, chat_ids, forward_message_id) VALUES (@title, @chat_ids, @forward_message_id)`,
+  findAll: `SELECT * FROM newsletters`,
+  deleteById: `DELETE FROM newsletters WHERE id = ?`,
 };

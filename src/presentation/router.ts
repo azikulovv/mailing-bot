@@ -29,10 +29,11 @@ export const createBot = () => {
 
   bot.start((ctx) => handlers.start(ctx));
   bot.action("start", (ctx) => handlers.start(ctx));
-  bot.action(/mail:(.+)/, (ctx) => handlers.mail(ctx));
-  bot.action(/send:(.+)/, (ctx) => handlers.send(ctx));
+  bot.action("newsletters", (ctx) => handlers.newsletters(ctx));
+  bot.action(/newsletter:(.+)/, (ctx) => handlers.newsletter(ctx));
+  bot.action(/forward:(.+)/, (ctx) => handlers.forward(ctx));
+  bot.action(/delete:(.+)/, (ctx) => handlers.delete(ctx));
   bot.action("stop", (ctx) => handlers.stop(ctx));
-  bot.action("mailing", (ctx) => handlers.mailList(ctx));
   bot.action("create", (ctx) => ctx.scene.enter("createScene"));
 
   return bot;

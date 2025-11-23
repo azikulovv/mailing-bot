@@ -6,7 +6,7 @@ export class MessageScheduler {
 
   constructor(private bot: Telegraf<BotContext>) {}
 
-  start(chatsId: string, message: string, intervalMs: number) {
+  start(chatIds: string, fromChatId: number, forwardMessageId: number, intervalMs: number) {
     if (this.intervalId) {
       console.log("Таймер уже запущен");
       return;
@@ -14,11 +14,11 @@ export class MessageScheduler {
 
     this.intervalId = setInterval(async () => {
       try {
-        chatsId
+        chatIds
           .replace(" ", "")
           .split(",")
           .forEach(async (chatId) => {
-            await this.bot.telegram.sendMessage(chatId, message);
+            await this.bot.telegram.forwardMessage(chatId, fromChatId, forwardMessageId);
           });
       } catch (err) {
         console.error("Ошибка при отправке сообщения:", err);

@@ -1,8 +1,8 @@
-import { Mail } from "@/domain/entities/mail";
+import { Newsletter } from "@/domain/entities/newsletter";
 
-export interface MailRepository {
-  findById(id: number): Promise<Mail | null>;
-  findAll(): Promise<Mail[] | null>;
-  create(mail: Mail): Promise<void>;
+export interface NewsletterRepository {
+  findById(id: number): Promise<Newsletter | null>;
+  findAll(): Promise<Newsletter[] | null>;
+  create(newsletter: Newsletter): Promise<void>;
   deleteById(id: number): Promise<void>;
 }

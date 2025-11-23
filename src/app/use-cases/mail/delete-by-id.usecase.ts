@@ -1,9 +1,9 @@
 import { NewsletterRepository } from "@/domain/repositories/mail.repository";
 
-export class FindMailsUseCase {
+export class DeleteByIdUseCase {
   constructor(private readonly newsletter: NewsletterRepository) {}
 
-  async execute() {
-    return await this.newsletter.findAll();
+  async execute(newsletterId: number) {
+    return await this.newsletter.deleteById(newsletterId);
   }
 }

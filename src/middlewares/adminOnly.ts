@@ -6,7 +6,6 @@ export const adminOnly = (adminIds: string[]): MiddlewareFn<Context> => {
 
     if (!userId || !adminIds.includes(userId.toString())) {
       try {
-        await ctx.reply("❌ Доступ запрещён. Только админы могут использовать этого бота.");
       } catch {}
       return;
     }

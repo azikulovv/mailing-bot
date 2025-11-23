@@ -2,15 +2,17 @@ import { Markup } from "telegraf";
 import { container } from "@/app/container";
 import type { BotContext } from "@/types";
 
-export const mailListHandler = async (ctx: BotContext) => {
-  const mails = await container.mail.findAll.execute();
+const newslettersHandler = async (ctx: BotContext) => {
+  const newsletters = await container.newsletter.findAll.execute();
 
   await ctx.answerCbQuery();
 
   const keyboard = Markup.inlineKeyboard(
     [
-      ...mails!.map((mail) => Markup.button.callback(`${mail.title}`, `mail:id=${mail.id}`)),
-      Markup.button.callback("Назад", "start"),
+      ...newsletters!.map((newsletter: any) =>
+        Markup.button.callback(`${newsletter.title}`, `newsletter:id=${newsletter.id}`)
+      ),
+      Markup.button.callback("⬅️ Назад", "start"),
     ],
     { columns: 1 }
   );
@@ -25,3 +27,5 @@ export const mailListHandler = async (ctx: BotContext) => {
     await ctx.reply(ctx.i18n.t("mailing.error.displaying"));
   }
 };
+
+export default newslettersHandler;

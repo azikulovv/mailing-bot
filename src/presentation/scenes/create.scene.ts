@@ -4,52 +4,48 @@ import { container } from "@/app/container";
 
 type State = {
   title: string;
-  content: string;
-  chatsId: string;
+  chatIds: string;
+  forwardMessageId: number;
 };
 
-let state: State = {
-  chatsId: "",
-  content: "",
-  title: "",
+let state: Partial<State> = {};
+
+const scenes = {
+  confirm: "confirm_create-newsletter",
+  edit: "edit_create-newsletter",
+  cancel: "cancel_create-newsletter",
 };
 
 export const createScene = new Scenes.WizardScene<BotContext>(
   "createScene",
 
   async (ctx: BotContext) => {
-    await ctx.reply("Напишите название рассылки: ");
+    await ctx.reply("Напишите заголовок рассылки: ");
     return ctx.wizard.next();
   },
 
   async (ctx) => {
     state.title = (ctx.message as any).text;
 
-    await ctx.reply("Напишите контент рассылки: ");
+    await ctx.reply("Перешлите готовое сообщение для рассылки: ");
     return ctx.wizard.next();
   },
 
   async (ctx) => {
-    state.content = (ctx.message as any).text;
+    state.forwardMessageId = ctx.message?.message_id;
 
     await ctx.reply("Пришлите id групп и чатов \nПример: 12345678,124125,5151124");
     return ctx.wizard.next();
   },
 
   async (ctx) => {
-    state.chatsId = (ctx.message as any).text;
+    state.chatIds = (ctx.message as any).text;
 
     const keyboard = Markup.inlineKeyboard(
       [
-        Markup.button.callback(
-          ctx.i18n.t("create-mail.inline-button.confirm"),
-          "confirm_create-mail"
-        ),
-        Markup.button.callback(ctx.i18n.t("create-mail.inline-button.edit"), "edit_create-mail"),
-        Markup.button.callback(
-          ctx.i18n.t("create-mail.inline-button.cancel"),
-          "cancel_create-mail"
-        ),
+        Markup.button.callback(ctx.i18n.t("create-mail.inline-button.confirm"), scenes.confirm),
+        Markup.button.callback(ctx.i18n.t("create-mail.inline-button.edit"), scenes.edit),
+        Markup.button.callback(ctx.i18n.t("create-mail.inline-button.cancel"), scenes.cancel),
       ],
       { columns: 1 }
     );
@@ -66,32 +62,34 @@ export const createScene = new Scenes.WizardScene<BotContext>(
 
     const action = (ctx.update.callback_query as any).data;
 
-    if (action === "confirm_create-mail") {
-      await ctx.deleteMessage();
+    switch (action) {
+      // * Confirm
+      case scenes.confirm:
+        await ctx.deleteMessage();
 
-      // Логика сохранение рассылки в БД
-      await container.mail.create.execute({
-        title: state.title,
-        content: state.content,
-        chatsId: state.chatsId,
-      });
+        // Логика сохранение рассылки в БД
+        await container.newsletter.create.execute({
+          title: state.title as string,
+          chatIds: state.chatIds as string,
+          forwardMessageId: Number(state.forwardMessageId) as number,
+        });
 
-      await ctx.reply(ctx.i18n.t("create-mail.success"), {
-        reply_markup: Markup.inlineKeyboard([Markup.button.callback("Главное меню", "start")])
-          .reply_markup,
-      });
-      return ctx.scene.leave();
-    }
+        await ctx.reply(ctx.i18n.t("create-mail.success"), {
+          reply_markup: Markup.inlineKeyboard([Markup.button.callback("Главное меню", "start")])
+            .reply_markup,
+        });
+        return ctx.scene.leave();
 
-    if (action === "edit_create-mail") {
-      await ctx.reply(ctx.i18n.t("create-mail.retry"));
-      ctx.wizard.selectStep(1);
-      return;
-    }
+      // * Edit
+      case scenes.edit:
+        await ctx.reply(ctx.i18n.t("create-mail.retry"));
+        ctx.wizard.selectStep(1);
+        return;
 
-    if (action === "cancel_create-mail") {
-      await ctx.reply(ctx.i18n.t("create-mail.cancelled"));
-      return ctx.scene.leave();
+      // * Cancel
+      case scenes.cancel:
+        await ctx.reply(ctx.i18n.t("create-mail.cancelled"));
+        return ctx.scene.leave();
     }
   }
 );
